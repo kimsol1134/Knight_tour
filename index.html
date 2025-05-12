@@ -3,51 +3,190 @@
 <head>
   <meta charset="UTF-8" />
   <title>데블스 플랜 기사의 여행 게임</title>
-  <!-- PWA / 아이콘 -->
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon.png" />
-  <meta name="theme-color" content="#ffb703" />
-
-  <!-- Open Graph / SNS -->
-  <meta property="og:title" content="데블스 플랜 기사의 여행 게임 – Knight Tour PWA" />
+  <meta name="theme-color" content="#ffffff" /> <meta property="og:title" content="데블스 플랜 기사의 여행 게임 – Knight Tour PWA" />
   <meta property="og:description" content="브라우저에서 즐기는 나이트 투어 퍼즐 – 오프라인에서도 플레이 가능!" />
   <meta property="og:image" content="open_graph.png" />
   <meta property="og:type" content="website" />
-  <!-- og:url 은 GitHub Pages 배포 URL 로 자동 인식되므로 생략하거나 도메인 확정 뒤 추가 -->
   <meta name="twitter:card" content="summary_large_image" />
 
   <style>
-    /* (기존 style 동일) */
     *{box-sizing:border-box}
-    body{font-family:"Pretendard",Arial,sans-serif;background:#f7f7f7;margin:0;padding:2rem 1rem;text-align:center}
-    h1{margin:0 0 .3rem;font-size:2rem;line-height:1.2}
-    h1 small{display:block;font-size:.9rem;margin-top:.2rem;color:#555}
-    #controls{display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem;margin-bottom:1rem}
-    select,button{padding:.5rem .9rem;font-size:1rem;border:1px solid #bbb;border-radius:6px;cursor:pointer}
-    button:disabled{cursor:not-allowed;opacity:.6}
+    body{
+      font-family:"Pretendard",Arial,sans-serif;
+      background:#ffffff; /* 2. 사이트 배경은 하얀색 */
+      margin:0;
+      padding:2rem 1rem;
+      text-align:center;
+      color: #424242; /* 기본 글자색 (흰색 배경에 잘 보이도록 약간 진하게) */
+    }
+    h1{
+      margin:0 0 .3rem;
+      font-size:2rem;
+      line-height:1.2;
+      color: #333333; /* 제목 색상 */
+    }
+    h1 .highlight-red { /* 1. "기사의 여행" 강조 */
+      color: #e53935; /* 빨간색 (Material Design Red 600) */
+    }
+    h1 small{
+      display:block;
+      font-size:.9rem;
+      margin-top:.2rem;
+      color:#757575; /* 부제목 색상 (회색 계열) */
+    }
+
+    #top-controls {
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #top-controls label {
+      margin-right: .5rem;
+      font-size: calc(1rem + 1px);
+      font-weight: bold;
+      color: #555555; /* 레이블 색상 */
+    }
+    #sizeSelect {
+      padding: .7rem 1.1rem;
+      font-size: 1.1rem;
+      border:1px solid #bdbdbd; /* 연한 회색 테두리 */
+      border-radius:6px;
+      cursor:pointer;
+      background-color: #f5f5f5; /* 약간의 배경색으로 구분 */
+      color: #424242;
+    }
+    #controls{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:.5rem;
+      margin-bottom:1rem
+    }
+    button{
+      padding:.6rem 1rem;
+      font-size:1rem;
+      border:1px solid transparent;
+      border-radius:6px;
+      cursor:pointer;
+      transition: filter .15s, background-color .15s, color .15s, box-shadow .15s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); /* 버튼에 약간의 그림자 효과 */
+    }
+    button:hover:not(:disabled) {
+        filter: brightness(0.95);
+        box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    }
+    button:disabled{
+      cursor:not-allowed;
+      opacity:.6;
+      background-color: #eeeeee !important;
+      color: #9e9e9e !important;
+      border-color: #e0e0e0 !important;
+      box-shadow: none !important;
+    }
+
+    /* 버튼 파스텔톤 색상 (흰색 배경 고려하여 채도/명도 조정) */
+    #startBtn {
+      background-color: #64b5f6; /* 파스텔 블루 (조금 더 진하게) */
+      color: white;
+    }
+    #undoBtn {
+      background-color: #81c784; /* 파스텔 그린 (조금 더 진하게) */
+      color: white;
+    }
+    #hintBtn {
+      background-color: #fff176; /* 파스텔 옐로우 (조금 더 진하게) */
+      color: #5d4037;
+      border: 1px solid #e0e0e0;
+    }
+    #toggleBtn {
+      background-color: #ba68c8; /* 파스텔 퍼플 (조금 더 진하게) */
+      color: white;
+    }
+
+    /* 3. 체스판은 하얀색 유지 (기존 스타일 활용) */
     #board{display:grid;gap:2px;justify-content:center;margin:0 auto;max-width:90vw}
-    .cell{width:90px;height:90px;background:#fff;border:1px solid #999;display:flex;align-items:center;justify-content:center;font-size:1.4rem;user-select:none}
-    .cell.valid{background:#2d6a4f;color:#fff}
-    .cell.hint{background:#e63946;color:#fff}
-    .cell.visited{background:#a0c4ff}
-    #status{margin-top:1rem;font-weight:600}
-    .guide-btn{display:inline-block;margin-top:.7rem;padding:.6rem 1.3rem;background:#ffb703;color:#fff!important;text-decoration:none;border-radius:8px;font-weight:600;transition:filter .15s}
-    .guide-btn:hover{filter:brightness(.9)}
+    .cell{
+        width:90px;
+        height:90px;
+        background:#ffffff; /* 체스판 셀 기본 배경 흰색 */
+        border:1px solid #e0e0e0; /* 셀 테두리 (약간 연하게) */
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size: calc(1.4rem + 20px);
+        font-weight: 700;
+        user-select:none;
+        color: #424242; /* 셀 내부 숫자 기본 색상 */
+        transition: background-color 0.2s ease-in-out; /* 부드러운 색상 변경 */
+    }
+
+    /* 4. 이동한 칸, 이동할 수 있는 칸, 힌트 칸 파스텔 색으로 변경 */
+    .cell.visited{ /* 이동한 칸 */
+      background:#e6e6fa; /* 파스텔 연보라 (Lavender) */
+      color: #5d5d9e; /* 대비되는 어두운 보라 계열 */
+      font-weight: bold;
+    }
+    .cell.valid{ /* 이동할 수 있는 칸 */
+      background:#c8e6c9; /* 파스텔 연녹색 */
+      /* 이동 가능 표시는 보통 비어있으므로 글자색은 중요하지 않지만, 만약 표시된다면 */
+      /* color: #388e3c; */
+      cursor: pointer; /* 클릭 가능함을 명시 */
+    }
+    .cell.valid:hover {
+        filter: brightness(0.95);
+    }
+    .cell.hint{ /* 힌트 칸 */
+      background:#ffcdd2; /* 파스텔 핑크/레드 */
+      color: #b71c1c;    /* 대비되는 어두운 빨강 계열 */
+      font-weight: bold;
+    }
+
+
+    #status{
+      margin-top:1rem;
+      font-weight:600;
+      font-size: calc(1em + 2px);
+      color: #424242;
+    }
+
+    .guide-btn{
+      display:inline-block;
+      margin-top:.7rem;
+      padding:.8rem 1.5rem;
+      background:#ffb74d; /* 파스텔 오렌지 (조금 더 진하게) */
+      color:white!important;
+      text-decoration:none;
+      border-radius:8px;
+      font-weight:600;
+      transition:filter .15s, box-shadow .15s;
+      font-size: 1.1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    }
+    .guide-btn:hover{
+        filter:brightness(.95);
+        box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    }
   </style>
 </head>
 <body>
-  <h1>데블스 플랜 기사의 여행 게임<small>– 나이트 투어 퍼즐 –</small></h1>
+  <h1>데블스 플랜 <span class="highlight-red">기사의 여행</span> 게임<small>– 나이트 투어 퍼즐 –</small></h1>
+
+  <div id="top-controls">
+    <label for="sizeSelect">
+      체스판 크기 :
+    </label>
+    <select id="sizeSelect">
+      <option value="5">5 × 5</option>
+      <option value="6">6 × 6</option>
+      <option value="7">7 × 7</option>
+      <option value="8">8 × 8</option>
+    </select>
+  </div>
 
   <div id="controls">
-    <label>
-      체스판 크기 :
-      <select id="sizeSelect">
-        <option value="5">5 × 5</option>
-        <option value="6">6 × 6</option>
-        <option value="7">7 × 7</option>
-        <option value="8">8 × 8</option>
-      </select>
-    </label>
     <button id="startBtn">게임 시작</button>
     <button id="undoBtn" disabled>뒤로 가기</button>
     <button id="hintBtn" disabled>힌트 보기</button>
@@ -59,7 +198,7 @@
   <a href="https://blog.naver.com/kimsol1015/223862326616" target="_blank" rel="noopener noreferrer" class="guide-btn">공략 보러 가기</a>
 
 <script>
-// (기존 JS + PWA 등록) ------------------------------------------------
+// (기존 JS 동일)
 const boardEl=document.getElementById('board');
 const sizeSelectEl=document.getElementById('sizeSelect');
 const startBtn=document.getElementById('startBtn');
@@ -70,17 +209,17 @@ const statusEl=document.getElementById('status');
 const DIRS=[{dx:1,dy:2},{dx:2,dy:1},{dx:2,dy:-1},{dx:1,dy:-2},{dx:-1,dy:-2},{dx:-2,dy:-1},{dx:-2,dy:1},{dx:-1,dy:2}];
 let N,visited,stack,cur,showMoves=true,lockedPath=null;
 function initBoard(size){N=size;visited=Array.from({length:N},()=>Array(N).fill(false));stack=[{x:0,y:0}];cur={x:0,y:0};visited[0][0]=true;lockedPath=null;boardEl.style.gridTemplateColumns=`repeat(${N},90px)`;render();highlight();updateStatus();undoBtn.disabled=false;hintBtn.disabled=false;}
-function render(){boardEl.innerHTML='';for(let y=0;y<N;y++){for(let x=0;x<N;x++){const d=document.createElement('div');d.className='cell';d.dataset.x=x;d.dataset.y=y;if(visited[y][x]){d.classList.add('visited');const idx=stack.findIndex(p=>p.x===x&&p.y===y);d.textContent=idx>=0?idx+1:'';}boardEl.appendChild(d);}}}
+function render(){boardEl.innerHTML='';for(let y=0;y<N;y++){for(let x=0;x<N;x++){const d=document.createElement('div');d.className='cell';d.dataset.x=x;d.dataset.y=y;if(visited[y][x]){d.classList.add('visited');const idx=stack.findIndex(p=>p.x===x&&p.y===y);if(idx>=0)d.textContent=idx+1;}boardEl.appendChild(d);}}} // visited 된 셀에 숫자 표시 로직 강화
 function valid(x,y){return x>=0&&y>=0&&x<N&&y<N&&!visited[y][x];}
-function highlight(){document.querySelectorAll('.cell').forEach(c=>c.classList.remove('valid','hint'));if(!showMoves)return;DIRS.forEach(({dx,dy})=>{const nx=cur.x+dx,ny=cur.y+dy;if(valid(nx,ny)){const c=document.querySelector(`.cell[data-x="${nx}"][data-y="${ny}"]`);if(c)c.classList.add('valid');}});}
+function highlight(){document.querySelectorAll('.cell').forEach(c=>{c.classList.remove('valid','hint');});if(!showMoves)return;DIRS.forEach(({dx,dy})=>{const nx=cur.x+dx,ny=cur.y+dy;if(valid(nx,ny)){const c=document.querySelector(`.cell[data-x="${nx}"][data-y="${ny}"]`);if(c)c.classList.add('valid');}});}
 function move(x,y){cur={x,y};visited[y][x]=true;stack.push({x,y});render();highlight();updateStatus();}
 function undo(){if(stack.length<=1)return;const last=stack.pop();visited[last.y][last.x]=false;cur=stack[stack.length-1];lockedPath=null;render();highlight();updateStatus();}
 function updateStatus(){const total=N*N,done=stack.length;statusEl.textContent=`이동 횟수: ${done} / ${total}`;if(done===total){alert('성공했습니다! 🎉');return;}if(!DIRS.some(({dx,dy})=>valid(cur.x+dx,cur.y+dy))){alert('실패했습니다. 다시 도전!');lockedPath=null;}}
 function onwardCnt(x,y,v){return DIRS.filter(({dx,dy})=>{const nx=x+dx,ny=y+dy;return nx>=0&&ny>=0&&nx<N&&ny<N&&!v[ny][nx];}).length;}
 function buildPath(){const v=visited.map(r=>r.slice());const p=stack.slice();function dfs(x,y,c){if(c===N*N)return true;const m=DIRS.map(({dx,dy})=>({x:x+dx,y:y+dy})).filter(({x,y})=>x>=0&&y>=0&&x<N&&y<N&&!v[y][x]).sort((a,b)=>onwardCnt(a.x,a.y,v)-onwardCnt(b.x,b.y,v));for(const t of m){v[t.y][t.x]=true;p.push(t);if(dfs(t.x,t.y,c+1))return true;p.pop();v[t.y][t.x]=false;}return false;}return dfs(cur.x,cur.y,stack.length)?p:null;}
-function hint(){if(!lockedPath)lockedPath=buildPath();if(lockedPath){const n=lockedPath[stack.length];if(n){const c=document.querySelector(`.cell[data-x="${n.x}"][data-y="${n.y}"]`);if(c)c.classList.add('hint');}else alert('더 이상 힌트가 없습니다!');}else alert('성공 경로가 없습니다.');}
+function hint(){if(!lockedPath)lockedPath=buildPath();if(lockedPath){const n=lockedPath[stack.length];if(n){document.querySelectorAll('.cell.hint').forEach(c => c.classList.remove('hint')); /* 기존 힌트 제거 */ const c=document.querySelector(`.cell[data-x="${n.x}"][data-y="${n.y}"]`);if(c)c.classList.add('hint');}else alert('더 이상 힌트가 없습니다!');}else alert('성공 경로가 없습니다.');}
 function toggleShow(){showMoves=!showMoves;toggleBtn.textContent=showMoves?'이동 칸 표시 OFF':'이동 칸 표시 ON';highlight();}
-boardEl.addEventListener('click',e=>{const cell=e.target.closest('.cell');if(!cell||!valid(+cell.dataset.x,+cell.dataset.y))return;move(+cell.dataset.x,+cell.dataset.y);});
+boardEl.addEventListener('click',e=>{const cell=e.target.closest('.cell');if(!cell) return; const x = +cell.dataset.x; const y = +cell.dataset.y; if (cell.classList.contains('valid')) { move(x,y); }}); // valid 클래스가 있는 경우에만 move 실행
 startBtn.addEventListener('click',()=>initBoard(+sizeSelectEl.value));undoBtn.addEventListener('click',undo);hintBtn.addEventListener('click',hint);toggleBtn.addEventListener('click',toggleShow);
 initBoard(5);
 // ---- PWA ServiceWorker 등록 ----

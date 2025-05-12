@@ -2,7 +2,7 @@
   "name": "데블스 플랜 기사의 여행 게임",
   "short_name": "KnightTour",
   "description": "브라우저에서 즐기는 기사의 여행 퍼즐, 오프라인 모드 지원",
-  "start_url": "./",
+  "start_url": "/Knight_tour/",
   "display": "standalone",
   "background_color": "#f7f7f7",
   "theme_color": "#ffb703",
