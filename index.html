@@ -17,31 +17,31 @@
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="naver-site-verification" content="03b9aa56806bfca6aaba966d6769aa864054a86d" />
-  
+
   <style>
     *{box-sizing:border-box}
     body{
       font-family:"Pretendard",Arial,sans-serif;
-      background:#ffffff; /* 2. 사이트 배경은 하얀색 */
+      background:#ffffff;
       margin:0;
       padding:2rem 1rem;
       text-align:center;
-      color: #424242; /* 기본 글자색 (흰색 배경에 잘 보이도록 약간 진하게) */
+      color: #424242;
     }
     h1{
       margin:0 0 .3rem;
       font-size:2rem;
       line-height:1.2;
-      color: #333333; /* 제목 색상 */
+      color: #333333;
     }
-    h1 .highlight-red { /* 1. "기사의 여행" 강조 */
-      color: #e53935; /* 빨간색 (Material Design Red 600) */
+    h1 .highlight-red {
+      color: #e53935;
     }
     h1 small{
       display:block;
       font-size:.9rem;
       margin-top:.2rem;
-      color:#757575; /* 부제목 색상 (회색 계열) */
+      color:#757575;
     }
 
     #top-controls {
@@ -54,15 +54,15 @@
       margin-right: .5rem;
       font-size: calc(1rem + 1px);
       font-weight: bold;
-      color: #555555; /* 레이블 색상 */
+      color: #555555;
     }
     #sizeSelect {
       padding: .7rem 1.1rem;
       font-size: 1.1rem;
-      border:1px solid #bdbdbd; /* 연한 회색 테두리 */
+      border:1px solid #bdbdbd;
       border-radius:6px;
       cursor:pointer;
-      background-color: #f5f5f5; /* 약간의 배경색으로 구분 */
+      background-color: #f5f5f5;
       color: #424242;
     }
     #controls{
@@ -79,7 +79,7 @@
       border-radius:6px;
       cursor:pointer;
       transition: filter .15s, background-color .15s, color .15s, box-shadow .15s;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); /* 버튼에 약간의 그림자 효과 */
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
     }
     button:hover:not(:disabled) {
         filter: brightness(0.95);
@@ -94,63 +94,57 @@
       box-shadow: none !important;
     }
 
-    /* 버튼 파스텔톤 색상 (흰색 배경 고려하여 채도/명도 조정) */
     #startBtn {
-      background-color: #64b5f6; /* 파스텔 블루 (조금 더 진하게) */
+      background-color: #64b5f6;
       color: white;
     }
     #undoBtn {
-      background-color: #81c784; /* 파스텔 그린 (조금 더 진하게) */
+      background-color: #81c784;
       color: white;
     }
     #hintBtn {
-      background-color: #fff176; /* 파스텔 옐로우 (조금 더 진하게) */
+      background-color: #fff176;
       color: #5d4037;
       border: 1px solid #e0e0e0;
     }
     #toggleBtn {
-      background-color: #ba68c8; /* 파스텔 퍼플 (조금 더 진하게) */
+      background-color: #ba68c8;
       color: white;
     }
 
-    /* 3. 체스판은 하얀색 유지 (기존 스타일 활용) */
     #board{display:grid;gap:2px;justify-content:center;margin:0 auto;max-width:90vw}
     .cell{
         width:90px;
         height:90px;
-        background:#ffffff; /* 체스판 셀 기본 배경 흰색 */
-        border:1px solid #e0e0e0; /* 셀 테두리 (약간 연하게) */
+        background:#ffffff;
+        border:1px solid #e0e0e0;
         display:flex;
         align-items:center;
         justify-content:center;
         font-size: calc(1.4rem + 20px);
         font-weight: 700;
         user-select:none;
-        color: #424242; /* 셀 내부 숫자 기본 색상 */
-        transition: background-color 0.2s ease-in-out; /* 부드러운 색상 변경 */
+        color: #424242;
+        transition: background-color 0.2s ease-in-out;
     }
 
-    /* 4. 이동한 칸, 이동할 수 있는 칸, 힌트 칸 파스텔 색으로 변경 */
-    .cell.visited{ /* 이동한 칸 */
-      background:#e6e6fa; /* 파스텔 연보라 (Lavender) */
-      color: #5d5d9e; /* 대비되는 어두운 보라 계열 */
+    .cell.visited{
+      background:#e6e6fa;
+      color: #5d5d9e;
       font-weight: bold;
     }
-    .cell.valid{ /* 이동할 수 있는 칸 */
-      background:#c8e6c9; /* 파스텔 연녹색 */
-      /* 이동 가능 표시는 보통 비어있으므로 글자색은 중요하지 않지만, 만약 표시된다면 */
-      /* color: #388e3c; */
-      cursor: pointer; /* 클릭 가능함을 명시 */
+    .cell.valid{
+      background:#c8e6c9;
+      cursor: pointer;
     }
     .cell.valid:hover {
         filter: brightness(0.95);
     }
-    .cell.hint{ /* 힌트 칸 */
-      background:#ffcdd2; /* 파스텔 핑크/레드 */
-      color: #b71c1c;    /* 대비되는 어두운 빨강 계열 */
+    .cell.hint{
+      background:#ffcdd2;
+      color: #b71c1c;
       font-weight: bold;
     }
-
 
     #status{
       margin-top:1rem;
@@ -163,7 +157,7 @@
       display:inline-block;
       margin-top:.7rem;
       padding:.8rem 1.5rem;
-      background:#ffb74d; /* 파스텔 오렌지 (조금 더 진하게) */
+      background:#ffb74d;
       color:white!important;
       text-decoration:none;
       border-radius:8px;
@@ -175,6 +169,13 @@
     .guide-btn:hover{
         filter:brightness(.95);
         box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    }
+
+    /* 쿠팡 파트너스 문구 스타일 */
+    .partners-notice {
+      font-size: 0.8rem;
+      color: #757575;
+      margin-top: 1rem;
     }
   </style>
 </head>
@@ -204,8 +205,14 @@
   <div id="status"></div>
   <a href="https://blog.naver.com/kimsol1015/223862326616" target="_blank" rel="noopener noreferrer" class="guide-btn">공략 보러 가기</a>
 
+  <div id="coupang-banner-wrapper" style="max-width: 680px; margin: 20px auto 0; width: 100%;">
+    <div id="coupang-banner-content-area">
+        </div>
+  </div>
+  <p class="partners-notice">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
+
 <script>
-// (기존 JS 동일)
+// (기존 게임 JS)
 const boardEl=document.getElementById('board');
 const sizeSelectEl=document.getElementById('sizeSelect');
 const startBtn=document.getElementById('startBtn');
@@ -216,7 +223,7 @@ const statusEl=document.getElementById('status');
 const DIRS=[{dx:1,dy:2},{dx:2,dy:1},{dx:2,dy:-1},{dx:1,dy:-2},{dx:-1,dy:-2},{dx:-2,dy:-1},{dx:-2,dy:1},{dx:-1,dy:2}];
 let N,visited,stack,cur,showMoves=true,lockedPath=null;
 function initBoard(size){N=size;visited=Array.from({length:N},()=>Array(N).fill(false));stack=[{x:0,y:0}];cur={x:0,y:0};visited[0][0]=true;lockedPath=null;boardEl.style.gridTemplateColumns=`repeat(${N},90px)`;render();highlight();updateStatus();undoBtn.disabled=false;hintBtn.disabled=false;}
-function render(){boardEl.innerHTML='';for(let y=0;y<N;y++){for(let x=0;x<N;x++){const d=document.createElement('div');d.className='cell';d.dataset.x=x;d.dataset.y=y;if(visited[y][x]){d.classList.add('visited');const idx=stack.findIndex(p=>p.x===x&&p.y===y);if(idx>=0)d.textContent=idx+1;}boardEl.appendChild(d);}}} // visited 된 셀에 숫자 표시 로직 강화
+function render(){boardEl.innerHTML='';for(let y=0;y<N;y++){for(let x=0;x<N;x++){const d=document.createElement('div');d.className='cell';d.dataset.x=x;d.dataset.y=y;if(visited[y][x]){d.classList.add('visited');const idx=stack.findIndex(p=>p.x===x&&p.y===y);if(idx>=0)d.textContent=idx+1;}boardEl.appendChild(d);}}}
 function valid(x,y){return x>=0&&y>=0&&x<N&&y<N&&!visited[y][x];}
 function highlight(){document.querySelectorAll('.cell').forEach(c=>{c.classList.remove('valid','hint');});if(!showMoves)return;DIRS.forEach(({dx,dy})=>{const nx=cur.x+dx,ny=cur.y+dy;if(valid(nx,ny)){const c=document.querySelector(`.cell[data-x="${nx}"][data-y="${ny}"]`);if(c)c.classList.add('valid');}});}
 function move(x,y){cur={x,y};visited[y][x]=true;stack.push({x,y});render();highlight();updateStatus();}
@@ -224,13 +231,75 @@ function undo(){if(stack.length<=1)return;const last=stack.pop();visited[last.y]
 function updateStatus(){const total=N*N,done=stack.length;statusEl.textContent=`이동 횟수: ${done} / ${total}`;if(done===total){alert('성공했습니다! 🎉');return;}if(!DIRS.some(({dx,dy})=>valid(cur.x+dx,cur.y+dy))){alert('실패했습니다. 다시 도전!');lockedPath=null;}}
 function onwardCnt(x,y,v){return DIRS.filter(({dx,dy})=>{const nx=x+dx,ny=y+dy;return nx>=0&&ny>=0&&nx<N&&ny<N&&!v[ny][nx];}).length;}
 function buildPath(){const v=visited.map(r=>r.slice());const p=stack.slice();function dfs(x,y,c){if(c===N*N)return true;const m=DIRS.map(({dx,dy})=>({x:x+dx,y:y+dy})).filter(({x,y})=>x>=0&&y>=0&&x<N&&y<N&&!v[y][x]).sort((a,b)=>onwardCnt(a.x,a.y,v)-onwardCnt(b.x,b.y,v));for(const t of m){v[t.y][t.x]=true;p.push(t);if(dfs(t.x,t.y,c+1))return true;p.pop();v[t.y][t.x]=false;}return false;}return dfs(cur.x,cur.y,stack.length)?p:null;}
-function hint(){if(!lockedPath)lockedPath=buildPath();if(lockedPath){const n=lockedPath[stack.length];if(n){document.querySelectorAll('.cell.hint').forEach(c => c.classList.remove('hint')); /* 기존 힌트 제거 */ const c=document.querySelector(`.cell[data-x="${n.x}"][data-y="${n.y}"]`);if(c)c.classList.add('hint');}else alert('더 이상 힌트가 없습니다!');}else alert('성공 경로가 없습니다.');}
+function hint(){if(!lockedPath)lockedPath=buildPath();if(lockedPath){const n=lockedPath[stack.length];if(n){document.querySelectorAll('.cell.hint').forEach(c => c.classList.remove('hint')); const c=document.querySelector(`.cell[data-x="${n.x}"][data-y="${n.y}"]`);if(c)c.classList.add('hint');}else alert('더 이상 힌트가 없습니다!');}else alert('성공 경로가 없습니다.');}
 function toggleShow(){showMoves=!showMoves;toggleBtn.textContent=showMoves?'이동 칸 표시 OFF':'이동 칸 표시 ON';highlight();}
-boardEl.addEventListener('click',e=>{const cell=e.target.closest('.cell');if(!cell) return; const x = +cell.dataset.x; const y = +cell.dataset.y; if (cell.classList.contains('valid')) { move(x,y); }}); // valid 클래스가 있는 경우에만 move 실행
+boardEl.addEventListener('click',e=>{const cell=e.target.closest('.cell');if(!cell) return; const x = +cell.dataset.x; const y = +cell.dataset.y; if (cell.classList.contains('valid')) { move(x,y); }});
 startBtn.addEventListener('click',()=>initBoard(+sizeSelectEl.value));undoBtn.addEventListener('click',undo);hintBtn.addEventListener('click',hint);toggleBtn.addEventListener('click',toggleShow);
 initBoard(5);
 // ---- PWA ServiceWorker 등록 ----
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(console.error));}
+</script>
+
+<script src="https://ads-partners.coupang.com/g.js"></script>
+
+<script>
+function renderCoupangAd() {
+    const bannerContentArea = document.getElementById('coupang-banner-content-area');
+    if (!bannerContentArea) {
+        // console.error('쿠팡 배너 내용 영역을 찾을 수 없습니다.');
+        return;
+    }
+
+    bannerContentArea.innerHTML = ''; // 이전 배너 내용 지우기
+
+    const wrapper = document.getElementById('coupang-banner-wrapper');
+    let bannerWidth = wrapper ? wrapper.offsetWidth : 680;
+
+    if (bannerWidth < 250) { // 화면이 매우 작을 경우 최소 너비 보장
+        bannerWidth = 250;
+    }
+    if (bannerWidth > 680) { // 배너의 원본 최대 너비를 넘지 않도록 함
+        bannerWidth = 680;
+    }
+
+    if (typeof PartnersCoupang !== 'undefined' && PartnersCoupang.G) {
+        new PartnersCoupang.G({
+            "id": 864498, // 실제 발급받은 ID로 변경하세요.
+            "template": "carousel",
+            "trackingCode": "AF3034941", // 실제 발급받은 추적 코드로 변경하세요.
+            "width": bannerWidth.toString(),
+            "height": "140",
+            "tsource": ""
+        }, bannerContentArea);
+
+    } else {
+        // console.error('PartnersCoupang.G API를 사용할 수 없습니다. g.js가 제대로 로드되었는지 확인하세요.');
+        setTimeout(renderCoupangAd, 500); // 0.5초 후 재시도
+    }
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+window.addEventListener('load', function() {
+    if (typeof PartnersCoupang !== 'undefined') {
+        renderCoupangAd();
+    } else {
+        // console.warn("PartnersCoupang 객체가 아직 정의되지 않았습니다. g.js 로드를 확인하세요.");
+        // renderCoupangAd 함수 내부에 이미 재시도 로직이 있으므로 여기서 추가 호출은 생략 가능
+    }
+});
+
+window.addEventListener('resize', debounce(renderCoupangAd, 250));
 </script>
 </body>
 </html>
