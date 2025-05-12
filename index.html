@@ -13,27 +13,27 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     /* 1.5× 모바일 확대 스타일 (v6) */
-    *{box-sizing:border-box}
-    body{font-family:"Pretendard",Arial,sans-serif;background:#f7f7f7;margin:0;padding:1.5rem .8rem;text-align:center}
-    h1{margin:0 0 .3rem;font-size:2.3rem;line-height:1.2}
-    h1 small{display:block;font-size:1.04rem;margin-top:.18rem;color:#555}
-    #controls{display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:1.1rem}
-    select,button{padding:.6rem 1rem;font-size:1.17rem;border:1px solid #bbb;border-radius:7px;cursor:pointer}
-    button:disabled{cursor:not-allowed;opacity:.6}
-    #board{display:grid;gap:0;justify-content:center;margin:0 auto;max-width:95vw}
-    .cell{width:104px;height:104px;background:#fff;border:1px solid #999;display:flex;align-items:center;justify-content:center;font-size:1.53rem;user-select:none}
-    .cell.valid{background:#2d6a4f;color:#fff}
-    .cell.hint{background:#e63946;color:#fff}
-    .cell.visited{background:#a0c4ff}
-    #status{margin-top:1.1rem;font-size:1.17rem;font-weight:700}
-    .guide-btn{display:inline-block;margin-top:.75rem;padding:.65rem 1.45rem;background:#ffb703;color:#fff!important;text-decoration:none;border-radius:9px;font-size:1.17rem;font-weight:600;transition:filter .15s}
-    .guide-btn:hover{filter:brightness(.9)}
+  *{box-sizing:border-box}
+  body{font-family:"Pretendard",Arial,sans-serif;background:#f7f7f7;margin:0;padding:1.5rem .8rem;text-align:center}
+  h1{margin:0 0 .3rem;font-size:2.3rem;line-height:1.2}
+  h1 small{display:block;font-size:1.04rem;margin-top:.18rem;color:#555}
+  #controls{display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-bottom:1.1rem}
+  select,button{padding:.6rem 1rem;font-size:1.17rem;border:1px solid #bbb;border-radius:7px;cursor:pointer}
+  button:disabled{cursor:not-allowed;opacity:.6}
+  #board{display:grid;gap:0;column-gap:0;row-gap:0;justify-content:start;margin:0 auto;max-width:95vw}
+  .cell{width:100px;height:100px;background:#fff;border:1px solid #999;display:flex;align-items:center;justify-content:center;font-size:1.45rem;user-select:none}
+  .cell.valid{background:#2d6a4f;color:#fff}
+  .cell.hint{background:#e63946;color:#fff}
+  .cell.visited{background:#a0c4ff}
+  #status{margin-top:1.1rem;font-size:1.17rem;font-weight:700}
+  .guide-btn{display:inline-block;margin-top:.75rem;padding:.65rem 1.45rem;background:#ffb703;color:#fff!important;text-decoration:none;border-radius:9px;font-size:1.17rem;font-weight:600;transition:filter .15s}
+  .guide-btn:hover{filter:brightness(.9)}
   </style>
 </head>
 <body>
   <h1>데블스 플랜 기사의 여행 게임<small>– 나이트 투어 퍼즐 –</small></h1>
   <div id="controls">
-    <label style="font-size:1.5rem">체스판 크기 :
+    <label style="font-size:1.17rem">체스판 크기 :
       <select id="sizeSelect">
         <option value="5">5 × 5</option>
         <option value="6">6 × 6</option>
@@ -52,19 +52,10 @@
 
 <script>
 /***************** 전역 & 상수 *****************/
-const boardEl = document.getElementById('board');
-const sizeSelectEl = document.getElementById('sizeSelect');
-const startBtn = document.getElementById('startBtn');
-const undoBtn = document.getElementById('undoBtn');
-const hintBtn = document.getElementById('hintBtn');
-const toggleBtn = document.getElementById('toggleBtn');
-const statusEl = document.getElementById('status');
-
-const DIRS = [
-  {dx:1,dy:2},{dx:2,dy:1},{dx:2,dy:-1},{dx:1,dy:-2},
-  {dx:-1,dy:-2},{dx:-2,dy:-1},{dx:-2,dy:1},{dx:-1,dy:2},
-];
-let N, visited, stack, cur, showMoves=true, lockedPath=null;
+const CELL=100;
+const boardEl=document.getElementById('board'),sizeSelectEl=document.getElementById('sizeSelect'),startBtn=document.getElementById('startBtn'),undoBtn=document.getElementById('undoBtn'),hintBtn=document.getElementById('hintBtn'),toggleBtn=document.getElementById('toggleBtn'),statusEl=document.getElementById('status');
+const DIRS=[{dx:1,dy:2},{dx:2,dy:1},{dx:2,dy:-1},{dx:1,dy:-2},{dx:-1,dy:-2},{dx:-2,dy:-1},{dx:-2,dy:1},{dx:-1,dy:2}];
+let N,visited,stack,cur,showMoves=true,lockedPath=null;
 
 /***************** 보드 초기화 *****************/
 function initBoard(size){
