@@ -64,6 +64,21 @@ function onwardCnt(x,y,v){return DIRS.filter(({dx,dy})=>{const nx=x+dx,ny=y+dy;r
 function buildPath(){const v=visited.map(r=>r.slice()),p=stack.slice();function dfs(x,y,c){if(c===N*N)return true;const m=DIRS.map(({dx,dy})=>({x:x+dx,y:y+dy})).filter(({x,y})=>x>=0&&y>=0&&x<N&&y<N&&!v[y][x]).sort((a,b)=>onwardCnt(a.x,a.y,v)-onwardCnt(b.x,b.y,v));for(const t of m){v[t.y][t.x]=true;p.push(t);if(dfs(t.x,t.y,c+1))return true;p.pop();v[t.y][t.x]=false;}return false;}return dfs(cur.x,cur.y,stack.length)?p:null;}
 function hint(){if(!lockedPath)lockedPath=buildPath();if(lockedPath){const n=lockedPath[stack.length];if(n){const c=document.querySelector(`.cell[data-x="${n.x}"][data-y="${n.y}"]`);if(c)c.classList.add('hint');}else alert('더 이상 힌트가 없습니다!');}else alert('성공 경로가 없습니다.');}
 function toggleShow(){showMoves=!showMoves;toggleBtn.textContent=showMoves?'이동 칸 표시 OFF':'이동 칸 표시 ON';highlight();}
+/***** 함수 (initBoard·render·valid·highlight·move·undo·updateStatus 등 v6 그대로) *****/
+
+/* 새로 추가 — 현재 위치에서 나이트 이동이 가능한지 검사 */
+function isKnightMove(x,y){
+  return DIRS.some(({dx,dy}) => cur.x+dx===x && cur.y+dy===y);
+}
+
+/***** 클릭 이벤트 — 유효칸 + 기사 이동 여부 2중 검사 *****/
+boardEl.addEventListener('click', (e) => {
+  const cell = e.target.closest('.cell');
+  if (!cell) return;
+  const x = +cell.dataset.x, y = +cell.dataset.y;
+  if (!valid(x,y) || !isKnightMove(x,y)) return; // 🔒 차단 로직 추가
+  move(x,y);
+});
 boardEl.addEventListener('click',e=>{const cell=e.target.closest('.cell');if(!cell||!valid(+cell.dataset.x,+cell.dataset.y))return;move(+cell.dataset.x,+cell.dataset.y);});
 startBtn.addEventListener('click',()=>initBoard(+sizeSelectEl.value));undoBtn.addEventListener('click',undo);hintBtn.addEventListener('click',hint);toggleBtn.addEventListener('click',toggleShow);
 initBoard(5);
