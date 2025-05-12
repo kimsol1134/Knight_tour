@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <title>데블스 플랜 기사의 여행 게임</title>
+  <!-- PWA & OG -->
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon.png" />
   <meta name="theme-color" content="#ffb703" />
   <meta property="og:title" content="데블스 플랜 기사의 여행 게임 – Knight Tour PWA" />
   <meta property="og:description" content="브라우저에서 즐기는 나이트 투어 퍼즐 – 오프라인에서도 플레이 가능!" />
   <meta property="og:image" content="open_graph.png" />
-  <meta property="og:type" content="website" />
-  <meta name="twitter:card" content="summary_large_image" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
+    /* 1.5× 모바일 확대 스타일 (v6) */
     *{box-sizing:border-box}
     body{font-family:"Pretendard",Arial,sans-serif;background:#f7f7f7;margin:0;padding:2rem 1rem;text-align:center}
     h1{margin:0 0 .4rem;font-size:3rem;line-height:1.2}
@@ -49,40 +49,127 @@
   <div id="board"></div>
   <div id="status"></div>
   <a href="https://blog.naver.com/kimsol1015/223862326616" target="_blank" rel="noopener noreferrer" class="guide-btn">공략 보러 가기</a>
-<script>
-const boardEl=document.getElementById('board'),sizeSelectEl=document.getElementById('sizeSelect'),startBtn=document.getElementById('startBtn'),undoBtn=document.getElementById('undoBtn'),hintBtn=document.getElementById('hintBtn'),toggleBtn=document.getElementById('toggleBtn'),statusEl=document.getElementById('status');
-const DIRS=[{dx:1,dy:2},{dx:2,dy:1},{dx:2,dy:-1},{dx:1,dy:-2},{dx:-1,dy:-2},{dx:-2,dy:-1},{dx:-2,dy:1},{dx:-1,dy:2}];
-let N,visited,stack,cur,showMoves=true,lockedPath=null;
-function initBoard(s){N=s;visited=Array.from({length:N},()=>Array(N).fill(false));stack=[{x:0,y:0}];cur={x:0,y:0};visited[0][0]=true;lockedPath=null;boardEl.style.gridTemplateColumns=`repeat(${N},135px)`;render();highlight();updateStatus();undoBtn.disabled=false;hintBtn.disabled=false;}
-function render(){boardEl.innerHTML='';for(let y=0;y<N;y++){for(let x=0;x<N;x++){const d=document.createElement('div');d.className='cell';d.dataset.x=x;d.dataset.y=y;if(visited[y][x]){d.classList.add('visited');const idx=stack.findIndex(p=>p.x===x&&p.y===y);d.textContent=idx>=0?idx+1:'';}boardEl.appendChild(d);}}}
-function valid(x,y){return x>=0&&y>=0&&x<N&&y<N&&!visited[y][x];}
-function highlight(){document.querySelectorAll('.cell').forEach(c=>c.classList.remove('valid','hint'));if(!showMoves)return;DIRS.forEach(({dx,dy})=>{const nx=cur.x+dx,ny=cur.y+dy;if(valid(nx,ny)){const c=document.querySelector(`.cell[data-x="${nx}"][data-y="${ny}"]`);if(c)c.classList.add('valid');}});}
-function move(x,y){cur={x,y};visited[y][x]=true;stack.push({x,y});render();highlight();updateStatus();}
-function undo(){if(stack.length<=1)return;const last=stack.pop();visited[last.y][last.x]=false;cur=stack[stack.length-1];lockedPath=null;render();highlight();updateStatus();}
-function updateStatus(){const total=N*N,done=stack.length;statusEl.textContent=`이동 횟수: ${done} / ${total}`;if(done===total){alert('성공했습니다! 🎉');return;}if(!DIRS.some(({dx,dy})=>valid(cur.x+dx,cur.y+dy))){alert('실패했습니다. 다시 도전!');lockedPath=null;}}
-function onwardCnt(x,y,v){return DIRS.filter(({dx,dy})=>{const nx=x+dx,ny=y+dy;return nx>=0&&ny>=0&&nx<N&&ny<N&&!v[ny][nx];}).length;}
-function buildPath(){const v=visited.map(r=>r.slice()),p=stack.slice();function dfs(x,y,c){if(c===N*N)return true;const m=DIRS.map(({dx,dy})=>({x:x+dx,y:y+dy})).filter(({x,y})=>x>=0&&y>=0&&x<N&&y<N&&!v[y][x]).sort((a,b)=>onwardCnt(a.x,a.y,v)-onwardCnt(b.x,b.y,v));for(const t of m){v[t.y][t.x]=true;p.push(t);if(dfs(t.x,t.y,c+1))return true;p.pop();v[t.y][t.x]=false;}return false;}return dfs(cur.x,cur.y,stack.length)?p:null;}
-function hint(){if(!lockedPath)lockedPath=buildPath();if(lockedPath){const n=lockedPath[stack.length];if(n){const c=document.querySelector(`.cell[data-x="${n.x}"][data-y="${n.y}"]`);if(c)c.classList.add('hint');}else alert('더 이상 힌트가 없습니다!');}else alert('성공 경로가 없습니다.');}
-function toggleShow(){showMoves=!showMoves;toggleBtn.textContent=showMoves?'이동 칸 표시 OFF':'이동 칸 표시 ON';highlight();}
-/***** 함수 (initBoard·render·valid·highlight·move·undo·updateStatus 등 v6 그대로) *****/
 
-/* 새로 추가 — 현재 위치에서 나이트 이동이 가능한지 검사 */
-function isKnightMove(x,y){
-  return DIRS.some(({dx,dy}) => cur.x+dx===x && cur.y+dy===y);
+<script>
+/***************** 전역 & 상수 *****************/
+const boardEl = document.getElementById('board');
+const sizeSelectEl = document.getElementById('sizeSelect');
+const startBtn = document.getElementById('startBtn');
+const undoBtn = document.getElementById('undoBtn');
+const hintBtn = document.getElementById('hintBtn');
+const toggleBtn = document.getElementById('toggleBtn');
+const statusEl = document.getElementById('status');
+
+const DIRS = [
+  {dx:1,dy:2},{dx:2,dy:1},{dx:2,dy:-1},{dx:1,dy:-2},
+  {dx:-1,dy:-2},{dx:-2,dy:-1},{dx:-2,dy:1},{dx:-1,dy:2},
+];
+let N, visited, stack, cur, showMoves=true, lockedPath=null;
+
+/***************** 보드 초기화 *****************/
+function initBoard(size){
+  N=size;
+  visited=Array.from({length:N},()=>Array(N).fill(false));
+  stack=[{x:0,y:0}];
+  cur={x:0,y:0};
+  visited[0][0]=true;
+  lockedPath=null;
+  boardEl.style.gridTemplateColumns=`repeat(${N},135px)`;
+  render(); highlight(); updateStatus();
+  undoBtn.disabled=false; hintBtn.disabled=false;
 }
 
-/***** 클릭 이벤트 — 유효칸 + 기사 이동 여부 2중 검사 *****/
-boardEl.addEventListener('click', (e) => {
-  const cell = e.target.closest('.cell');
-  if (!cell) return;
-  const x = +cell.dataset.x, y = +cell.dataset.y;
-  if (!valid(x,y) || !isKnightMove(x,y)) return; // 🔒 차단 로직 추가
+/***************** 렌더링 & 하이라이트 *****************/
+function render(){
+  boardEl.innerHTML='';
+  for(let y=0;y<N;y++){
+    for(let x=0;x<N;x++){
+      const div=document.createElement('div');
+      div.className='cell'; div.dataset.x=x; div.dataset.y=y;
+      if(visited[y][x]){
+        div.classList.add('visited');
+        const idx=stack.findIndex(p=>p.x===x&&p.y===y);
+        div.textContent=idx>=0?idx+1:'';
+      }
+      boardEl.appendChild(div);
+    }
+  }
+}
+function valid(x,y){return x>=0&&y>=0&&x<N&&y<N&&!visited[y][x];}
+function highlight(){
+  document.querySelectorAll('.cell').forEach(c=>c.classList.remove('valid','hint'));
+  if(!showMoves)return;
+  DIRS.forEach(({dx,dy})=>{
+    const nx=cur.x+dx, ny=cur.y+dy;
+    if(valid(nx,ny)){
+      const c=document.querySelector(`.cell[data-x="${nx}"][data-y="${ny}"]`);
+      if(c)c.classList.add('valid');
+    }
+  });
+}
+
+/***************** 게임 로직 *****************/
+function isKnightL(x,y){
+  const dx=Math.abs(cur.x-x), dy=Math.abs(cur.y-y);
+  return (dx===1&&dy===2)||(dx===2&&dy===1);
+}
+function move(x,y){
+  cur={x,y}; visited[y][x]=true; stack.push({x,y});
+  render(); highlight(); updateStatus();
+}
+function undo(){
+  if(stack.length<=1)return;
+  const last=stack.pop(); visited[last.y][last.x]=false;
+  cur=stack[stack.length-1]; lockedPath=null;
+  render(); highlight(); updateStatus();
+}
+function updateStatus(){
+  const total=N*N, done=stack.length;
+  statusEl.textContent=`이동 횟수: ${done} / ${total}`;
+  if(done===total){alert('성공했습니다! 🎉');return;}
+  if(!DIRS.some(({dx,dy})=>valid(cur.x+dx,cur.y+dy))){alert('실패했습니다. 다시 도전!'); lockedPath=null;}
+}
+
+/***************** 힌트 *****************/
+function onwardCnt(x,y,v){return DIRS.filter(({dx,dy})=>{const nx=x+dx,ny=y+dy;return nx>=0&&ny>=0&&nx<N&&ny<N&&!v[ny][nx];}).length;}
+function buildPath(){
+  const v=visited.map(r=>r.slice()), p=stack.slice();
+  function dfs(x,y,c){
+    if(c===N*N)return true;
+    const moves=DIRS.map(({dx,dy})=>({x:x+dx,y:y+dy}))
+      .filter(({x,y})=>x>=0&&y>=0&&x<N&&y<N&&!v[y][x])
+      .sort((a,b)=>onwardCnt(a.x,a.y,v)-onwardCnt(b.x,b.y,v));
+    for(const m of moves){v[m.y][m.x]=true;p.push(m);if(dfs(m.x,m.y,c+1))return true;p.pop();v[m.y][m.x]=false;}
+    return false;
+  }
+  return dfs(cur.x,cur.y,stack.length)?p:null;
+}
+function hint(){
+  if(!lockedPath)lockedPath=buildPath();
+  if(lockedPath){
+    const n=lockedPath[stack.length];
+    if(n){const c=document.querySelector(`.cell[data-x="${n.x}"][data-y="${n.y}"]`);if(c)c.classList.add('hint');}
+    else alert('더 이상 힌트가 없습니다!');
+  }else alert('성공 경로가 없습니다.');
+}
+
+/***************** 표시 토글 *****************/
+function toggleShow(){showMoves=!showMoves;toggleBtn.textContent=showMoves?'이동 칸 표시 OFF':'이동 칸 표시 ON';highlight();}
+
+/***************** 이벤트 바인딩 *****************/
+boardEl.addEventListener('click',e=>{
+  const cell=e.target.closest('.cell'); if(!cell) return;
+  const x=+cell.dataset.x, y=+cell.dataset.y;
+  if(!valid(x,y)||!isKnightL(x,y)) return; // 🔒 최종 차단
   move(x,y);
 });
-boardEl.addEventListener('click',e=>{const cell=e.target.closest('.cell');if(!cell||!valid(+cell.dataset.x,+cell.dataset.y))return;move(+cell.dataset.x,+cell.dataset.y);});
-startBtn.addEventListener('click',()=>initBoard(+sizeSelectEl.value));undoBtn.addEventListener('click',undo);hintBtn.addEventListener('click',hint);toggleBtn.addEventListener('click',toggleShow);
+startBtn.addEventListener('click',()=>initBoard(+sizeSelectEl.value));
+undoBtn.addEventListener('click',undo);
+hintBtn.addEventListener('click',hint);
+toggleBtn.addEventListener('click',toggleShow);
+
 initBoard(5);
-if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(console.error));}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(console.error));}
 </script>
 </body>
 </html>
