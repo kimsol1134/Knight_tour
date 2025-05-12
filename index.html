@@ -1,273 +1,238 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <title>데블스 플랜 기사의 여행 게임</title>
+  <meta charset="UTF-8">
+  <title>데블스 플랜 기사의 여행 게임 – 나이트 투어 퍼즐</title>
   <style>
-    * { box-sizing: border-box; }
+    :root {
+      --tile-size: 90px;
+      --font-scale: 0.3;
+      --color-unvisited: #A6C8FF;
+      --color-visited: #6EA8FF;
+      --color-active: #FFB74D;
+      --color-button: #FF8C00;
+      --color-button-hover: #e07b00;
+    }
     body {
-      font-family: "Pretendard", Arial, sans-serif;
-      background: #f7f7f7;
-      margin: 0;
-      padding: 2rem 1rem;
+      font-family: sans-serif;
       text-align: center;
+      margin: 2em;
     }
-
-    h1 { margin-top: 0; }
-
-    #controls {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.2em;
     }
-
+    h2 {
+      font-size: 1.2rem;
+      margin-top: 0;
+      color: #555;
+    }
+    .controls {
+      margin: 1em 0;
+    }
     select, button {
-      padding: 0.4rem 0.8rem;
       font-size: 1rem;
-      border: 1px solid #bbb;
-      border-radius: 6px;
-      cursor: pointer;
+      padding: 0.5em 1em;
+      margin: 0 0.3em;
     }
-
     button:disabled {
+      opacity: 0.5;
       cursor: not-allowed;
-      opacity: 0.6;
     }
-
-    #board {
-      display: grid;
-      gap: 2px;
-      justify-content: center;
-      margin: 0 auto;
-      max-width: 90vw;
+    .board {
+      display: inline-grid;
+      gap: 4px;
+      border: 2px solid #333;
+      padding: 4px;
+      margin-bottom: 1em;
     }
-
-    .cell {
-      width: 90px;   /* 1.5배 확대 */
-      height: 90px;  /* 1.5배 확대 */
-      background: #fff;
-      border: 1px solid #999;
+    .tile {
+      width: var(--tile-size);
+      height: var(--tile-size);
+      background: var(--color-unvisited);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
+      font-size: calc(var(--tile-size) * var(--font-scale));
+      cursor: pointer;
       user-select: none;
+      transition: filter 0.2s;
     }
-
-    /* 색상 팔레트 개선 */
-    .cell.valid   { background: #2d6a4f;  color: #fff; }  /* 가능한 이동 – 다크 그린 */
-    .cell.hint    { background: #e63946;  color: #fff; }  /* 힌트 – 레드 */
-    .cell.visited { background: #a0c4ff; }               /* 방문 – 파스텔 블루 */
-
-    #status { margin-top: 1rem; font-weight: 600; }
+    .tile:hover {
+      filter: brightness(1.1);
+    }
+    .tile.visited {
+      background: var(--color-visited);
+    }
+    .tile.active {
+      background: var(--color-active);
+    }
+    .status {
+      font-size: 1.2rem;
+      margin-bottom: 1em;
+    }
+    .strategy-button {
+      display: inline-block;
+      background: var(--color-button);
+      color: #fff;
+      padding: 0.7em 1.5em;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 1.1rem;
+      transition: background 0.2s;
+    }
+    .strategy-button:hover {
+      background: var(--color-button-hover);
+    }
+    @media (max-width: 600px) {
+      :root { --tile-size: 60px; }
+    }
   </style>
 </head>
 <body>
   <h1>데블스 플랜 기사의 여행 게임</h1>
+  <h2>나이트 투어 퍼즐</h2>
 
-  <div id="controls">
-    <label>
-      체스판 크기 :
-      <select id="sizeSelect">
-        <option value="5">5 × 5</option>
-        <option value="6">6 × 6</option>
-        <option value="7">7 × 7</option>
-        <option value="8">8 × 8</option>
-      </select>
-    </label>
-    <button id="startBtn">게임 시작</button>
-    <button id="undoBtn"  disabled>뒤로 가기</button>
-    <button id="hintBtn"  disabled>힌트 보기</button>
+  <div class="controls">
+    체스판 크기:
+    <select id="size-select">
+      <option>5 × 5</option>
+      <option>6 × 6</option>
+      <option>7 × 7</option>
+      <option>8 × 8</option>
+    </select>
+    <button id="start-btn">게임 시작</button>
+    <button id="back-btn" disabled>뒤로 가</button>
+    <button id="hint-btn" disabled>힌트 보기</button>
   </div>
 
-  <div id="board"></div>
-  <div id="status"></div>
-  <!-- 🔗 공략 링크 -->
-  <div id="guide" style="margin-top:0.5rem">
-    게임 공략이 필요하다면 <a href="https://blog.naver.com/kimsol1015/223862326616" target="_blank">여기를 참고하세요</a>.
+  <div id="board" class="board"></div>
+
+  <div class="status">
+    이동 횟수: <span id="move-count">0</span> / <span id="max-count">0</span>
   </div>
+
+  <a href="https://blog.naver.com/kimsol1015/223862326616" target="_blank"
+     class="strategy-button">게임 공략 보기</a>
 
   <script>
-    /* ---------------- 공통 상태 ---------------- */
-    const boardEl      = document.getElementById("board");
-    const sizeSelectEl = document.getElementById("sizeSelect");
-    const startBtn     = document.getElementById("startBtn");
-    const undoBtn      = document.getElementById("undoBtn");
-    const hintBtn      = document.getElementById("hintBtn");
-    const statusEl     = document.getElementById("status");
+    const boardEl = document.getElementById('board');
+    const startBtn = document.getElementById('start-btn');
+    const backBtn = document.getElementById('back-btn');
+    const hintBtn = document.getElementById('hint-btn');
+    const sizeSelect = document.getElementById('size-select');
+    const moveCountEl = document.getElementById('move-count');
+    const maxCountEl = document.getElementById('max-count');
 
-    const KNIGHT_DIRS = [
-      {dx:  1, dy:  2}, {dx:  2, dy:  1}, {dx:  2, dy: -1}, {dx:  1, dy: -2},
-      {dx: -1, dy: -2}, {dx: -2, dy: -1}, {dx: -2, dy:  1}, {dx: -1, dy:  2},
-    ];
+    let size, maxMoves, moves, path, visited;
 
-    let N            = 5;            // 체스판 한 변 길이
-    let visited      = [];           // 방문 여부 2차원 배열
-    let moveStack    = [];           // {x, y} 객체 배열 – 뒤로가기용 스택
-    let currentPos   = {x: 0, y: 0}; // 현재 말 위치
+    function initBoard() {
+      boardEl.innerHTML = '';
+      boardEl.style.gridTemplateColumns = `repeat(${size}, auto)`;
+      visited = Array.from({ length: size }, () => Array(size).fill(false));
+      path = [];
+      moves = 0;
+      moveCountEl.textContent = moves;
+      maxCountEl.textContent = maxMoves;
+      backBtn.disabled = true;
+      hintBtn.disabled = true;
 
-    /* ---------------- 초기화 / 렌더링 ---------------- */
-    function initBoard(size) {
-      N = size;
-      visited   = Array.from({ length: N }, () => Array(N).fill(false));
-      moveStack = [];
-      currentPos = { x: 0, y: 0 };
-      visited[0][0] = true;
-      moveStack.push({ x: 0, y: 0 });
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          tile.dataset.r = r;
+          tile.dataset.c = c;
+          tile.textContent = r * size + c + 1;
+          tile.addEventListener('click', () => onTileClick(r, c));
+          boardEl.appendChild(tile);
+        }
+      }
+    }
 
-      boardEl.style.gridTemplateColumns = `repeat(${N}, 90px)`;  // 1.5배 확대
-      renderBoard();
-      updateHighlights();
-      updateStatus();
+    function onTileClick(r, c) {
+      if (!path.length) {
+        startTour(r, c);
+      } else if (isValidMove(r, c)) {
+        moveKnight(r, c);
+      }
+    }
 
-      undoBtn.disabled = false;
+    function startTour(r, c) {
+      size = parseInt(sizeSelect.value);
+      maxMoves = size * size;
+      initBoard();
+
+      setActive(r, c);
+      visited[r][c] = true;
+      path.push([r, c]);
+      updateButtons();
+    }
+
+    function isValidMove(r, c) {
+      const [pr, pc] = path[path.length - 1];
+      const dr = Math.abs(pr - r), dc = Math.abs(pc - c);
+      return !visited[r][c] &&
+             ((dr === 1 && dc === 2) || (dr === 2 && dc === 1));
+    }
+
+    function moveKnight(r, c) {
+      const [pr, pc] = path[path.length - 1];
+      getTile(pr, pc).classList.add('visited');
+      getTile(pr, pc).classList.remove('active');
+
+      setActive(r, c);
+      visited[r][c] = true;
+      path.push([r, c]);
+      moves++;
+      moveCountEl.textContent = moves;
+      backBtn.disabled = false;
       hintBtn.disabled = false;
-    }
 
-    function renderBoard() {
-      boardEl.innerHTML = "";
-      for (let y = 0; y < N; y++) {
-        for (let x = 0; x < N; x++) {
-          const cell = document.createElement("div");
-          cell.className = "cell";
-          cell.dataset.x = x;
-          cell.dataset.y = y;
-
-          if (visited[y][x]) {
-            cell.classList.add("visited");
-            const idx = moveStack.findIndex(p => p.x === x && p.y === y);
-            cell.textContent = idx >= 0 ? idx + 1 : "";
-          }
-          boardEl.appendChild(cell);
-        }
+      if (moves + 1 === maxMoves) {
+        setTimeout(() => alert('성공했습니다! 🎉'), 100);
       }
+      updateButtons();
     }
 
-    /* ---------------- 유효 이동, 하이라이트 ---------------- */
-    function isValidMove(x, y) {
-      return (
-        x >= 0 && y >= 0 && x < N && y < N && !visited[y][x]
-      );
+    function setActive(r, c) {
+      getTile(r, c).classList.add('active');
     }
 
-    function updateHighlights() {
-      document.querySelectorAll(".cell").forEach(c => c.classList.remove("valid", "hint"));
-      KNIGHT_DIRS.forEach(({ dx, dy }) => {
-        const nx = currentPos.x + dx;
-        const ny = currentPos.y + dy;
-        if (isValidMove(nx, ny)) {
-          const cell = document.querySelector(`.cell[data-x='${nx}'][data-y='${ny}']`);
-          if (cell) cell.classList.add("valid");
-        }
-      });
+    function getTile(r, c) {
+      return boardEl.querySelector(`.tile[data-r="${r}"][data-c="${c}"]`);
     }
 
-    /* ---------------- 게임 진행 ---------------- */
-    function makeMove(x, y) {
-      currentPos = { x, y };
-      visited[y][x] = true;
-      moveStack.push({ x, y });
-      renderBoard();
-      updateHighlights();
-      updateStatus();
+    function undo() {
+      if (path.length < 2) return;
+      const [r, c] = path.pop();
+      visited[r][c] = false;
+      getTile(r, c).classList.remove('active');
+      moves--;
+      moveCountEl.textContent = moves;
+      const [pr, pc] = path[path.length - 1];
+      setActive(pr, pc);
+      backBtn.disabled = path.length < 2;
     }
 
-    function undoMove() {
-      if (moveStack.length <= 1) return; // 시작 칸은 남겨둠
-      const last = moveStack.pop();
-      visited[last.y][last.x] = false;
-      currentPos = moveStack[moveStack.length - 1];
-      renderBoard();
-      updateHighlights();
-      updateStatus();
+    function updateButtons() {
+      backBtn.disabled = path.length < 2;
+      hintBtn.disabled = moves + 1 === maxMoves;
     }
 
-    function updateStatus() {
-      const total = N * N;
-      const visitedCnt = moveStack.length;
-      statusEl.textContent = `이동 횟수: ${visitedCnt} / ${total}`;
-
-      // 성공 판단
-      if (visitedCnt === total) {
-        alert("성공했습니다! 🎉");
-        undoBtn.disabled = true;
-        hintBtn.disabled = true;
-        return;
-      }
-
-      // 실패 판단 – 더 갈 곳이 없음
-      const hasMove = KNIGHT_DIRS.some(({ dx, dy }) => isValidMove(currentPos.x + dx, currentPos.y + dy));
-      if (!hasMove) {
-        alert("실패했습니다. 다시 도전해 보세요!");
-        undoBtn.disabled = true;
-        hintBtn.disabled = true;
-      }
-    }
-
-    /* ---------------- 힌트 (백트래킹) ---------------- */
-    function countOnward(x, y, visitedArr) {
-      return KNIGHT_DIRS.filter(({ dx, dy }) => {
-        const nx = x + dx, ny = y + dy;
-        return nx >= 0 && ny >= 0 && nx < N && ny < N && !visitedArr[ny][nx];
-      }).length;
-    }
-
-    function findTourPath() {
-      // 깊은 복사 & Warnsdorff + 백트래킹
-      const v = visited.map(row => row.slice());
-      const path = moveStack.slice();
-
-      function dfs(x, y, cnt) {
-        if (cnt === N * N) return true;
-        const moves = KNIGHT_DIRS
-          .map(({ dx, dy }) => ({ x: x + dx, y: y + dy }))
-          .filter(p => p.x >= 0 && p.y >= 0 && p.x < N && p.y < N && !v[p.y][p.x])
-          .sort((a, b) => countOnward(a.x, a.y, v) - countOnward(b.x, b.y, v));
-
-        for (const m of moves) {
-          v[m.y][m.x] = true;
-          path.push(m);
-          if (dfs(m.x, m.y, cnt + 1)) return true;
-          path.pop();
-          v[m.y][m.x] = false;
-        }
-        return false;
-      }
-
-      if (dfs(currentPos.x, currentPos.y, moveStack.length)) {
-        return path; // 전체 경로
-      }
-      return null; // 불가
-    }
-
-    function showHint() {
-      const fullPath = findTourPath();
-      if (fullPath && fullPath.length > moveStack.length) {
-        const next = fullPath[moveStack.length];
-        const cell = document.querySelector(`.cell[data-x='${next.x}'][data-y='${next.y}']`);
-        if (cell) cell.classList.add("hint");
-      } else {
-        alert("성공할 수 있는 경로가 없습니다. 다시 시도해 보세요! 🙏");
-      }
-    }
-
-    /* ---------------- 이벤트 바인딩 ---------------- */
-    boardEl.addEventListener("click", e => {
-      const cell = e.target.closest(".cell");
-      if (!cell || !cell.classList.contains("valid")) return;
-      const x = +cell.dataset.x;
-      const y = +cell.dataset.y;
-      makeMove(x, y);
+    startBtn.addEventListener('click', () => {
+      size = parseInt(sizeSelect.value);
+      maxMoves = size * size;
+      initBoard();
+      startBtn.disabled = true;
+      sizeSelect.disabled = true;
     });
 
-    startBtn.addEventListener("click", () => initBoard(+sizeSelectEl.value));
-    undoBtn.addEventListener("click", undoMove);
-    hintBtn.addEventListener("click", showHint);
-
-    // 최초 5×5 보드 자동 생성
-    initBoard(5);
+    backBtn.addEventListener('click', undo);
+    hintBtn.addEventListener('click', () => {
+      // 힌트 로직 추가 가능
+      alert('힌트 기능은 곧 제공될 예정입니다.');
+    });
   </script>
 </body>
 </html>
