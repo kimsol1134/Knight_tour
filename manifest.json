@@ -1,11 +1,11 @@
 {
-  "name": "데블스 플랜 기사의 여행 게임",
-  "short_name": "KnightTour",
-  "description": "브라우저에서 즐기는 기사의 여행 퍼즐, 오프라인 모드 지원",
-  "start_url": "/Knight_tour/",
+  "name": "데블스플랜2 기사의 여행 게임 (PWA)",
+  "short_name": "기사의 여행 2",
+  "description": "데블스플랜2 화제의 '기사의 여행' 퍼즐을 PWA로 간편하게 즐겨보세요! 오프라인 플레이 가능.",
   "display": "standalone",
-  "background_color": "#f7f7f7",
-  "theme_color": "#ffb703",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "start_url": "/Knight_tour/",
   "icons": [
     {
       "src": "icon.png",
