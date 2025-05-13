@@ -1,4 +1,4 @@
-const CACHE_NAME = 'knight_tour_v9';
+const CACHE_NAME = 'knight_tour_v1.0';
 const ASSETS = [
   './',
   './index.html',
